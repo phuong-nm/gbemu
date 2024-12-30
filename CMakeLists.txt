@@ -9,7 +9,7 @@ include(add_sources)
 
 project(gbemu)
 
-add_definitions(-std=c++17)
+add_definitions(-std=c++14)
 add_warnings()
 
 declare_library(gbemu-core src)

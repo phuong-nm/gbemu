@@ -5,7 +5,6 @@
 
 #include <fstream>
 #include <iterator>
-#include <optional>
 
 static uint pixel_size = 2;
 
@@ -22,7 +21,7 @@ static CliOptions cliOptions;
 
 static bool should_exit = false;
 
-static std::optional<GbButton> get_gb_button(int keyCode) {
+static GbButton get_gb_button(int keyCode) {
     switch (keyCode) {
         case SDLK_UP: return GbButton::Up;
         case SDLK_DOWN: return GbButton::Down;
@@ -32,10 +31,10 @@ static std::optional<GbButton> get_gb_button(int keyCode) {
         case SDLK_z: return GbButton::B;
         case SDLK_BACKSPACE: return GbButton::Select;
         case SDLK_RETURN: return GbButton::Start;
-        case SDLK_b: gameboy->debug_toggle_background(); return {};
-        case SDLK_s: gameboy->debug_toggle_sprites(); return {};
-        case SDLK_w: gameboy->debug_toggle_window(); return {};
-        default: return {};
+        case SDLK_b: gameboy->debug_toggle_background(); return GbButton::Invalid;
+        case SDLK_s: gameboy->debug_toggle_sprites(); return GbButton::Invalid;
+        case SDLK_w: gameboy->debug_toggle_window(); return GbButton::Invalid;
+        default: return GbButton::Invalid;
     }
 }
 
@@ -114,15 +113,19 @@ static void process_events() {
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
             case SDL_KEYDOWN:
-                if (event.key.repeat == true) { break; }
-                if (auto button_pressed = get_gb_button(event.key.keysym.sym); button_pressed) {
-                    gameboy->button_pressed(*button_pressed);
+                if (event.key.repeat == 0) {
+                    auto button_pressed = get_gb_button(event.key.keysym.sym);
+                    if (button_pressed != GbButton::Invalid) {
+                        gameboy->button_pressed(button_pressed);
+                    }
                 }
                 break;
             case SDL_KEYUP:
-                if (event.key.repeat == true) { break; }
-                if (auto button_released = get_gb_button(event.key.keysym.sym); button_released) {
-                    gameboy->button_released(*button_released);
+                if (event.key.repeat == 0) {
+                    auto button_released = get_gb_button(event.key.keysym.sym);
+                    if (button_released != GbButton::Invalid) {
+                        gameboy->button_released(button_released);
+                    }
                 }
                 break;
             case SDL_WINDOWEVENT:
